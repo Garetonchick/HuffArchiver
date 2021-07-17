@@ -1,0 +1,53 @@
+# Add new groups at the bottom
+
+- group:    00-setup
+  start:    01-09-2021 00:00
+  deadline: 22-09-2021 23:59
+  tasks:
+    - task: multiplication
+      score: 100
+
+- group:    01-homework-one
+  start:    11-09-2021 00:00
+  deadline: 22-09-2021 23:59
+  tasks:
+    - task: associative_operation
+      score: 100
+    - task: palindrome
+      score: 100
+    - task: password
+      score: 100
+    - task: sort_students
+      score: 100
+    - task: utf8
+      score: 200
+
+- group:    02-homework-two
+  start:    20-09-2021 00:00
+  deadline: 29-09-2021 23:59
+  tasks:
+    - task: admission
+      score: 100
+    - task: scorer
+      score: 100
+    - task: search
+      score: 200
+    - task: tests_checking
+      score: 100
+    - task: unixpath
+      score: 100
+    - task: word2vec
+      score: 100
+
+- group:    03-homework-three
+  start:    27-09-2021 00:00
+  deadline: 06-10-2021 23:59
+  tasks:
+    - task: mines
+      score: 200
+    - task: scorer2
+      score: 100
+    - task: search2
+      score: 100
+    - task: unixpath2
+      score: 100
