@@ -1,5 +1,0 @@
-{
-    "allow_change": "word2vec.cpp",
-    "tests": "test_word2vec",
-    "solutions": "private"
-}

@@ -1,5 +1,0 @@
-{
-    "allow_change": "unixpath.cpp",
-    "tests": "test_unixpath",
-    "solutions": "private"
-}

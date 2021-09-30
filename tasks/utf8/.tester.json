@@ -1,6 +1,0 @@
-{
-  "allow_change": "utf8.cpp",
-  "tests": "test_utf8",
-  "solutions": "private",
-    "linter": false
-}

@@ -1,1 +1,0 @@
-add_catch(test_associative_operation test.cpp associative_operation.cpp)

@@ -1,6 +1,0 @@
-[submodule "cpp-pilot-hse-grader"]
-	path = grader
-	url = ../cpp-pilot-hse-grader.git
-[submodule "private"]
-	path = private
-	url = ../cpp-pilot-hse-private.git
