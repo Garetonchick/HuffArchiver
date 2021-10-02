@@ -3,25 +3,37 @@
 
 #include <vector>
 
+TEST(Reader, ReadBinaryFile1) {
+    const std::vector<unsigned char> expected_data = {0xAA, 0xAA, 0xAA, 0xAA, 0xBB, 0xBB,
+                                                      0xBB, 0xBB, 0xCC, 0xCC, 0xCC, 0xCC};
 
-TEST(Reader, ReadBinaryFile) {
-  const std::vector<unsigned char> expected_data = {
-    0xAA, 0xAA, 0xAA, 0xAA,
-    0xBB, 0xBB, 0xBB, 0xBB,
-    0xCC, 0xCC, 0xCC, 0xCC
-  };
+    Reader reader("mock/test_1.bin");
 
-  Reader reader("mock/test_1.bin");
+    for (size_t i = 0; i < expected_data.size(); ++i) {
+        ASSERT_TRUE(reader.has_next_byte());
+        auto read_byte = reader.read_next_byte();
+        ASSERT_EQ(read_byte, expected_data[i]);
+    }
 
-  for (size_t i = 0; i < expected_data.size(); ++i) {
-    ASSERT_TRUE(reader.has_next_byte());
-    auto read_byte = reader.read_next_byte();
-    ASSERT_EQ(read_byte, expected_data[i]);
-  }
+    ASSERT_FALSE(reader.has_next_byte());
+}
+
+TEST(Reader, ReadBinaryFile2) {
+    const std::vector<unsigned char> expected_data = {0xFF, 0xAF, 0xFA, 0xF1, 0xF2, 0xF4, 0xF5,
+                                                      0xF6, 0xBC, 0xDD, 0x30, 0x00, 0x40, 0xFF};
+
+    Reader reader("mock/test_2.bin");
+
+    for (size_t i = 0; i < expected_data.size(); ++i) {
+        ASSERT_TRUE(reader.has_next_byte());
+        auto read_byte = reader.read_next_byte();
+        ASSERT_EQ(read_byte, expected_data[i]);
+    }
+
+    ASSERT_FALSE(reader.has_next_byte());
 }
 
 int main(int argc, char** argv) {
-   ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
-
