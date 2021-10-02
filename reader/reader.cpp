@@ -5,7 +5,7 @@ Reader::Reader(const std::string& file_path) : file_(file_path, std::ios::binary
     file_.seekg(0);
 }
 
-unsigned char Reader::read_next_byte() {
+unsigned char Reader::ReadNextByte() {
     char buffer;
 
     file_.read(&buffer, 1);
@@ -14,6 +14,6 @@ unsigned char Reader::read_next_byte() {
     return buffer;
 }
 
-bool Reader::has_next_byte() const {
+bool Reader::HasNextByte() const {
     return bytes_read_ < file_size_;
 }

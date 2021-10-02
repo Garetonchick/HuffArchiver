@@ -1,3 +1,4 @@
+#pragma once
 #include <fstream>
 #include <optional>
 
@@ -5,8 +6,8 @@ class Reader {
 public:
     explicit Reader(const std::string& file_path);
 
-    unsigned char read_next_byte();
-    bool has_next_byte() const;
+    unsigned char ReadNextByte();
+    bool HasNextByte() const;
 
 private:
     std::ifstream file_;

@@ -10,12 +10,12 @@ TEST(Reader, ReadBinaryFile1) {
     Reader reader("mock/test_1.bin");
 
     for (auto byte : expected_data) {
-        ASSERT_TRUE(reader.has_next_byte());
-        auto read_byte = reader.read_next_byte();
+        ASSERT_TRUE(reader.HasNextByte());
+        auto read_byte = reader.ReadNextByte();
         ASSERT_EQ(read_byte, byte);
     }
 
-    ASSERT_FALSE(reader.has_next_byte());
+    ASSERT_FALSE(reader.HasNextByte());
 }
 
 TEST(Reader, ReadBinaryFile2) {
@@ -25,12 +25,12 @@ TEST(Reader, ReadBinaryFile2) {
     Reader reader("mock/test_2.bin");
 
     for (auto byte : expected_data) {
-        ASSERT_TRUE(reader.has_next_byte());
-        auto read_byte = reader.read_next_byte();
+        ASSERT_TRUE(reader.HasNextByte());
+        auto read_byte = reader.ReadNextByte();
         ASSERT_EQ(read_byte, byte);
     }
 
-    ASSERT_FALSE(reader.has_next_byte());
+    ASSERT_FALSE(reader.HasNextByte());
 }
 
 int main(int argc, char** argv) {
