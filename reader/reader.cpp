@@ -14,6 +14,6 @@ unsigned char Reader::read_next_byte() {
     return buffer;
 }
 
-bool Reader::has_next_byte() {
+bool Reader::has_next_byte() const {
     return bytes_read_ < file_size_;
 }

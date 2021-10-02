@@ -3,10 +3,10 @@
 
 class Reader {
 public:
-    Reader(const std::string& file_path);
+    explicit Reader(const std::string& file_path);
 
     unsigned char read_next_byte();
-    bool has_next_byte();
+    bool has_next_byte() const;
 
 private:
     std::ifstream file_;

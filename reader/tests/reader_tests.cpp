@@ -9,10 +9,10 @@ TEST(Reader, ReadBinaryFile1) {
 
     Reader reader("mock/test_1.bin");
 
-    for (size_t i = 0; i < expected_data.size(); ++i) {
+    for (auto byte : expected_data) {
         ASSERT_TRUE(reader.has_next_byte());
         auto read_byte = reader.read_next_byte();
-        ASSERT_EQ(read_byte, expected_data[i]);
+        ASSERT_EQ(read_byte, byte);
     }
 
     ASSERT_FALSE(reader.has_next_byte());
@@ -24,10 +24,10 @@ TEST(Reader, ReadBinaryFile2) {
 
     Reader reader("mock/test_2.bin");
 
-    for (size_t i = 0; i < expected_data.size(); ++i) {
+    for (auto byte : expected_data) {
         ASSERT_TRUE(reader.has_next_byte());
         auto read_byte = reader.read_next_byte();
-        ASSERT_EQ(read_byte, expected_data[i]);
+        ASSERT_EQ(read_byte, byte);
     }
 
     ASSERT_FALSE(reader.has_next_byte());
