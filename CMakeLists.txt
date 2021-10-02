@@ -5,12 +5,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 
 add_executable(MAIN main.cpp)
 
-
 add_library(ARCHIVER archiver/*)
 
 target_link_libraries(MAIN ARCHIVER)
-
-
 
 
 
