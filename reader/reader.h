@@ -6,7 +6,7 @@ class Reader {
 public:
     explicit Reader(const std::string& file_path);
 
-    unsigned char ReadNextByte();
+    unsigned char ReadNextByte() const;
     bool HasNextByte() const;
 
 private:

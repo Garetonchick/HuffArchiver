@@ -2,32 +2,61 @@
 #include <vector>
 #include <stdexcept>
 
-// Yeah, I don't use smart pointers, because I think it's really inefficient
-// here and furthermore these classes are simple enough to handle memory freeing by myself
-
-template<class T>
+template <class T>
 class BinaryTrie {
-    friend class Iterator;
-    friend class Node;
     class Node;
+
 public:
+    struct BinaryPath {
+        size_t code;
+        size_t length;
+    };
+
     class Iterator {
         friend BinaryTrie;
+
     public:
-        const T& operator*() const;
-        bool operator!=(const Iterator& o) const;
         void operator++();
 
-    private:
-        Iterator(const BinaryTrie::Node* node);
+        const T& operator*() const;
+        bool operator==(const Iterator& o) const;
+        bool operator!=(const Iterator& o) const;
+
+        BinaryPath GetPath() const;
 
     private:
-        const BinaryTrie::Node* node_ = nullptr;
+        Iterator(const Node* node, const BinaryPath& path);
+        Iterator() = default;
+
+    private:
+        const Node* node_ = nullptr;
+        BinaryPath path_;
+    };
+
+    class Traverser {
+        friend BinaryTrie;
+
+    public:
+        const BinaryPath& operator*() const;
+
+        bool HasValue() const;
+        const T& GetValue() const;
+        bool CanGoLeft() const;
+        bool CanGoRight() const;
+
+        void GoLeft();
+        void GoRight();
+
+    private:
+        Traverser(const Node* node, const BinaryPath& path);
+
+    private:
+        const Node* node_ = nullptr;
+        BinaryPath path_;
     };
 
 private:
     class Node {
-        friend Iterator;
     public:
         explicit Node(const T& value);
         Node(const Node& o) = delete;
@@ -42,6 +71,7 @@ private:
         Node* GetLeftChild();
         Node* GetRightChild();
         Node* GetAncestor();
+
         const Node* GetLeftChild() const;
         const Node* GetRightChild() const;
         const Node* GetAncestor() const;
@@ -52,15 +82,17 @@ private:
 
     private:
         T* value_ = nullptr;
-        Node* children_[2] = { nullptr };
+        Node* children_[2] = {nullptr};
         Node* ancestor_ = nullptr;
     };
 
 public:
     explicit BinaryTrie(const T& root_value);
-    BinaryTrie(const BinaryTrie& o) = delete; // TODO: add copying
+    BinaryTrie() = default;
+    BinaryTrie(const BinaryTrie& o) = delete;  // TODO: add copying
     BinaryTrie& operator=(const BinaryTrie& o) = delete;
     BinaryTrie(BinaryTrie&& o) noexcept;
+    BinaryTrie& operator=(BinaryTrie&& o) noexcept;
     ~BinaryTrie();
 
     void Merge(BinaryTrie&& o);
@@ -68,20 +100,64 @@ public:
     Iterator begin() const;
     Iterator end() const;
 
+    Traverser GetRootTraverser() const;
+
 private:
     Node* root_ = nullptr;
-    Node* begin_ = nullptr;
+    Node* begin_node_ = nullptr;
+    size_t begin_height_ = 0;
 };
 
 template <class T>
-BinaryTrie<T>::BinaryTrie(const T& root_value) {
-    begin_ = root_ = new Node(root_value);
+const typename BinaryTrie<T>::BinaryPath& BinaryTrie<T>::Traverser::operator*() const {
+    return path_;
 }
 
 template <class T>
-BinaryTrie<T>::BinaryTrie(BinaryTrie&& o) noexcept : begin_(o.begin_), root_(o.root_) {
+bool BinaryTrie<T>::Traverser::HasValue() const {
+    return node_ != nullptr && node_->HasValue();
+}
+template <class T>
+const T& BinaryTrie<T>::Traverser::GetValue() const {
+    return node_->GetValue();
+}
+template <class T>
+bool BinaryTrie<T>::Traverser::CanGoLeft() const {
+    return node_->GetLeftChild() != nullptr;
+}
+template <class T>
+bool BinaryTrie<T>::Traverser::CanGoRight() const {
+    return node_->GetRightChild() != nullptr;
+}
+template <class T>
+void BinaryTrie<T>::Traverser::GoLeft() {
+    if (node_ != nullptr) {
+        node_ = node_->GetLeftChild();
+        ++path_.length;
+    }
+}
+template <class T>
+void BinaryTrie<T>::Traverser::GoRight() {
+    if (node_ != nullptr) {
+        node_ = node_->GetRightChild();
+        path_.code |= (size_t(1) << path_.length);
+        ++path_.length;
+    }
+}
+template <class T>
+BinaryTrie<T>::Traverser::Traverser(const BinaryTrie::Node* node, const BinaryTrie::BinaryPath& path)
+    : node_(node), path_(path) {
+}
+
+template <class T>
+BinaryTrie<T>::BinaryTrie(const T& root_value) {
+    begin_node_ = root_ = new Node(root_value);
+}
+
+template <class T>
+BinaryTrie<T>::BinaryTrie(BinaryTrie&& o) noexcept
+    : root_(o.root_), begin_node_(o.begin_node_), begin_height_(o.begin_height_) {
     o.root_ = nullptr;
-    o.begin_ = nullptr;
 }
 
 template <class T>
@@ -91,8 +167,17 @@ BinaryTrie<T>::~BinaryTrie() {
 
 template <class T>
 void BinaryTrie<T>::Merge(BinaryTrie&& o) {
-    if(this == &o) {
+    if (this == &o) {
         throw std::invalid_argument("BINARY_TRIE: trie can't be merged with itself");
+    }
+
+    if (o.begin() == o.end()) {
+        return;
+    }
+
+    if (root_ == nullptr) {
+        (*this) = std::move(o);
+        return;
     }
 
     Node* new_root = new Node();
@@ -102,29 +187,44 @@ void BinaryTrie<T>::Merge(BinaryTrie&& o) {
 
     root_ = new_root;
     o.root_ = nullptr;
-    o.begin_ = nullptr;
+    o.begin_node_ = nullptr;
 
     root_->GetLeftChild()->SetAncestor(root_);
     root_->GetRightChild()->SetAncestor(root_);
+
+    ++begin_height_;
 }
 
 template <class T>
 typename BinaryTrie<T>::Iterator BinaryTrie<T>::begin() const {
-    return Iterator(begin_);
+    return Iterator(begin_node_, BinaryPath{.length = begin_height_});
 }
 
 template <class T>
 typename BinaryTrie<T>::Iterator BinaryTrie<T>::end() const {
-    return BinaryTrie::Iterator(nullptr);
+    return BinaryTrie::Iterator(nullptr, {});
+}
+template <class T>
+BinaryTrie<T>& BinaryTrie<T>::operator=(BinaryTrie&& o) noexcept {
+    this->root_ = o.root_;
+    this->begin_node_ = o.begin_node_;
+    this->begin_height_ = o.begin_height_;
+    o.root_ = nullptr;
+
+    return *this;
+}
+template <class T>
+typename BinaryTrie<T>::Traverser BinaryTrie<T>::GetRootTraverser() const {
+    return Traverser(root_, {});
 }
 
 template <class T>
 const T& BinaryTrie<T>::Iterator::operator*() const {
-    if(node_ == nullptr) {
+    if (node_ == nullptr) {
         throw std::runtime_error("BINARY_TRIE::ITERATOR: end() iterator can't be dereferenced");
     }
 
-    if(!node_->HasValue()) {
+    if (!node_->HasValue()) {
         throw std::runtime_error("BINARY_TRIE::ITERATOR: attempt to dereference iterator without value");
     }
 
@@ -133,7 +233,7 @@ const T& BinaryTrie<T>::Iterator::operator*() const {
 
 template <class T>
 void BinaryTrie<T>::Iterator::operator++() {
-    if(node_ == nullptr) {
+    if (node_ == nullptr) {
         return;
     }
 
@@ -143,26 +243,46 @@ void BinaryTrie<T>::Iterator::operator++() {
     do {
         const Node* node_copy_ = node_;
 
-        if(!was_right_turn && node_->GetRightChild() != nullptr && node_->GetRightChild() != last_node_) {
+        if (!was_right_turn && node_->GetRightChild() != nullptr && node_->GetRightChild() != last_node_) {
             node_ = node_->GetRightChild();
+            path_.code |= (size_t(1) << path_.length);
+            ++path_.length;
             was_right_turn = true;
-        } else if(was_right_turn && node_->GetLeftChild() != nullptr && node_->GetLeftChild() != last_node_) {
+        } else if (was_right_turn && node_->GetLeftChild() != nullptr && node_->GetLeftChild() != last_node_) {
             node_ = node_->GetLeftChild();
+            ++path_.length;
         } else {
             node_ = node_->GetAncestor();
+
+            if (path_.length != 0 && (path_.code & (size_t(1) << (path_.length - 1)))) {
+                path_.code ^= (size_t(1) << (path_.length - 1));
+            }
+
+            if (path_.length != 0) {
+                --path_.length;
+            }
         }
 
         last_node_ = node_copy_;
-    } while(node_ != nullptr && !node_->HasValue());
+    } while (node_ != nullptr && !node_->HasValue());
 }
 
 template <class T>
-BinaryTrie<T>::Iterator::Iterator(const BinaryTrie::Node* node) : node_(node) {
+BinaryTrie<T>::Iterator::Iterator(const BinaryTrie::Node* node, const BinaryPath& path) : node_(node), path_(path) {
 }
 
 template <class T>
 bool BinaryTrie<T>::Iterator::operator!=(const BinaryTrie::Iterator& o) const {
     return node_ != o.node_;
+}
+
+template <class T>
+typename BinaryTrie<T>::BinaryPath BinaryTrie<T>::Iterator::GetPath() const {
+    return path_;
+}
+template <class T>
+bool BinaryTrie<T>::Iterator::operator==(const BinaryTrie::Iterator& o) const {
+    return node_ == o.node_;
 }
 
 template <class T>
@@ -174,7 +294,7 @@ template <class T>
 BinaryTrie<T>::Node::~Node() {
     delete value_;
 
-    for(auto &child : children_) {
+    for (auto& child : children_) {
         delete child;
     }
 }
@@ -186,7 +306,7 @@ bool BinaryTrie<T>::Node::HasValue() const {
 
 template <class T>
 const T& BinaryTrie<T>::Node::GetValue() const {
-    if(value_ == nullptr) {
+    if (value_ == nullptr) {
         throw std::runtime_error("BINARY_TRIE::NODE: attempt to get value out of empty node");
     }
 

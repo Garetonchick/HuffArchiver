@@ -5,7 +5,7 @@ Reader::Reader(const std::string& file_path) : file_(file_path, std::ios::binary
     file_.seekg(0);
 }
 
-unsigned char Reader::ReadNextByte() {
+unsigned char Reader::ReadNextByte() const {
     char buffer;
 
     file_.read(&buffer, 1);
