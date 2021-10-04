@@ -9,7 +9,7 @@
 #include <queue>
 
 std::mt19937 random_gen(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-auto gen_number = std::bind(std::uniform_int_distribution<size_t>(0, 10000), random_gen);
+auto gen_number = std::bind(std::uniform_int_distribution<size_t>(0, 10), random_gen);
 
 template <class T>
 void CheckIteration(const BinaryTrie<T>& trie, const std::vector<T>& expected_traversal) {
@@ -190,7 +190,8 @@ void GenerateAndTestTrie(size_t size) {
     std::vector<size_t> expected_path_codes(size);
     std::vector<size_t> expected_path_lengths(size);
 
-    std::priority_queue<std::pair<size_t, size_t>> q;
+    std::priority_queue<std::pair<size_t, size_t>, std::vector<std::pair<size_t, size_t>>,
+                        std::greater<>> q;
 
     for (size_t i = 0; i < size; ++i) {
         tries_indices[i] = {i};
@@ -235,13 +236,24 @@ void GenerateAndTestTrie(size_t size) {
 
     BinaryTrie<size_t> final_trie(std::move(tries[final_idx]));
 
+    if(*std::max_element(expected_path_lengths.begin(), expected_path_lengths.end()) > 8 * sizeof(size_t)) {
+        return;
+    }
+
     CheckIteration(final_trie, expected_iteration);
     CheckIteratorPaths(final_trie, expected_path_codes, expected_path_lengths);
     CheckTraversing(final_trie, expected_iteration, expected_path_codes, expected_path_lengths);
 }
 
 TEST(BinaryTrie, BinaryTrieIteratorPathTest2) {
-    GenerateAndTestTrie(25);
+    GenerateAndTestTrie(100);
+}
+
+TEST(BinaryTrie, BinaryTrieIteratorPathTest3) {
+
+    for(size_t i = 1; i < 1000; ++i) {
+        GenerateAndTestTrie(i);
+    }
 }
 
 int main(int argc, char** argv) {
