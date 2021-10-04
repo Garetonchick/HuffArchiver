@@ -85,6 +85,10 @@ TEST(Archiver, MultipleFilesCompressionTest) {
     TestFilesCompression({"T", "test_1.bin", "Zadachnik-Kostrikin.pdf"});
 }
 
+TEST(Archiver,TextFilesCompressionTest) {
+    TestFilesCompression({"T", "test_1.bin", "Zadachnik-Kostrikin.pdf"});
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
