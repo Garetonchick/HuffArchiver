@@ -181,7 +181,7 @@ std::vector<Archiver::SymbolWithCode> Archiver::ToCanonical(HuffmanCodesArray& h
 }
 
 void Archiver::WriteHuffmanCode(std::unique_ptr<WriterInterface>& writer, HuffmanCode code) {
-    for (size_t i = 0; i < code.length; ++i) {
+    for (char i = 0; i < code.length; ++i) {
         writer->WriteBit((code.code >> (code.length - 1 - i)) & 1);
     }
 }
@@ -302,7 +302,7 @@ short Archiver::ReadCodeWithTrie(std::unique_ptr<ReaderInterface>& reader, const
 Archiver::HuffmanCode Archiver::ToHuffmanCode(const BinaryTrie<short>::BinaryPath& binary_path) {
     HuffmanCode huffman{.length = char(binary_path.length)};
 
-    for (size_t i = 0; i < huffman.length; ++i) {
+    for (char i = 0; i < huffman.length; ++i) {
         if ((binary_path.code >> i) & 1) {
             huffman.code |= (1 << (huffman.length - 1 - i));
         }
