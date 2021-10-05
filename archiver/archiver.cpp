@@ -1,8 +1,9 @@
 #include "archiver.h"
+
 #include "../binary_trie/binary_trie.h"
+#include "../priority_queue/priority_queue.h"
 
 #include <algorithm>
-#include <queue>
 #include <tuple>
 #include <utility>
 
@@ -102,27 +103,36 @@ Archiver::FrequenciesArray Archiver::CountFrequencies(std::unique_ptr<ReaderInte
 }
 
 Archiver::HuffmanCodesArray Archiver::BuildHuffmanCodes(const FrequenciesArray& frequencies) {
+    struct QueueNode{
+        bool operator<(const QueueNode& o) const {
+            return priority < o.priority;
+        }
+
+        size_t priority;
+        size_t trie_index;
+    };
+
     std::vector<BinaryTrie<short>> tries;
-    std::priority_queue<std::pair<size_t, size_t>, std::vector<std::pair<size_t, size_t>>, std::greater<>> queue;
+    PriorityQueue<QueueNode> queue;
 
     for(size_t i = 0; i < kMaxAlphabetSize; ++i) {
         if (frequencies[i]) {
-            queue.emplace(frequencies[i], tries.size());
+            queue.Push({.priority = frequencies[i], .trie_index = tries.size()});
             tries.emplace_back(i);
         }
     }
 
-    while(queue.size() > 1) {
-        auto [prior1, idx1] = queue.top();
-        queue.pop();
-        auto [prior2, idx2] = queue.top();
-        queue.pop();
+    while(queue.GetSize() > 1) {
+        auto [prior1, idx1] = queue.Top();
+        queue.Pop();
+        auto [prior2, idx2] = queue.Top();
+        queue.Pop();
 
         tries[idx1].Merge(std::move(tries[idx2]));
-        queue.emplace(prior1 + prior2, idx1);
+        queue.Push({.priority = prior1 + prior2, .trie_index = idx1});
     }
 
-    auto [_, final_idx] = queue.top();
+    size_t final_idx = queue.Top().trie_index;
     BinaryTrie<short> trie(std::move(tries[final_idx]));
 
     std::array<HuffmanCode, kMaxAlphabetSize> huffman_codes;
