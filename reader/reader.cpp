@@ -4,16 +4,17 @@
 #include <stdexcept>
 
 Reader::Reader(const std::string& file_path) : file_(file_path, std::ios::binary | std::ios::ate) {
-    if(!file_) {
-        throw std::runtime_error("READER: Can't open file:" + file_path);
+    if (!file_) {
+        throw std::runtime_error("READER: Can't open file: " + file_path);
     }
 
-    size_t name_start_pos = std::find_if(file_path.rbegin(), file_path.rend(), [](char c)
-                                         { return c == '/' || c == '\\'; }) - file_path.rbegin();
+    size_t name_start_pos =
+        std::find_if(file_path.rbegin(), file_path.rend(), [](char c) { return c == '/' || c == '\\'; }) -
+        file_path.rbegin();
 
     name_start_pos = file_path.size() - name_start_pos;
 
-    if(name_start_pos < file_path.size()) {
+    if (name_start_pos < file_path.size()) {
         file_name_ = file_path.substr(name_start_pos, file_path.size() - name_start_pos);
     }
 
@@ -39,7 +40,7 @@ unsigned char Reader::ReadNextByte() {
     file_.read(&buffer, 1);
     ++bytes_read_;
 
-    if(bit_pos_ != 0) {
+    if (bit_pos_ != 0) {
         ++bytes_read_;
         bit_pos_ = 0;
         buffer_byte_ = 0;
@@ -51,7 +52,7 @@ unsigned char Reader::ReadNextByte() {
 bool Reader::ReadNextBit() {
     bool bit = false;
 
-    if(bit_pos_ == 0) {
+    if (bit_pos_ == 0) {
         char buffer;
         file_.read(&buffer, 1);
 
@@ -60,7 +61,7 @@ bool Reader::ReadNextBit() {
 
     bit = ((buffer_byte_ >> (7 - bit_pos_)) & 1);
 
-    if(bit_pos_ == 7) {
+    if (bit_pos_ == 7) {
         bit_pos_ = 0;
         ++bytes_read_;
     } else {
@@ -76,5 +77,3 @@ void Reader::Reset() {
     buffer_byte_ = 0;
     bit_pos_ = 0;
 }
-
-

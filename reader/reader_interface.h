@@ -3,7 +3,7 @@
 
 class ReaderInterface {
 public:
-    virtual ~ReaderInterface() {};
+    virtual ~ReaderInterface() = default;
 
     virtual bool HasNextByte() const = 0;
     virtual bool HasNextBit() const = 0;

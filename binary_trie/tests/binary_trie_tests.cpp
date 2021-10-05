@@ -190,8 +190,7 @@ void GenerateAndTestTrie(size_t size) {
     std::vector<size_t> expected_path_codes(size);
     std::vector<size_t> expected_path_lengths(size);
 
-    std::priority_queue<std::pair<size_t, size_t>, std::vector<std::pair<size_t, size_t>>,
-                        std::greater<>> q;
+    std::priority_queue<std::pair<size_t, size_t>, std::vector<std::pair<size_t, size_t>>, std::greater<>> q;
 
     for (size_t i = 0; i < size; ++i) {
         tries_indices[i] = {i};
@@ -236,7 +235,7 @@ void GenerateAndTestTrie(size_t size) {
 
     BinaryTrie<size_t> final_trie(std::move(tries[final_idx]));
 
-    if(*std::max_element(expected_path_lengths.begin(), expected_path_lengths.end()) > 8 * sizeof(size_t)) {
+    if (*std::max_element(expected_path_lengths.begin(), expected_path_lengths.end()) > 8 * sizeof(size_t)) {
         return;
     }
 
@@ -251,7 +250,7 @@ TEST(BinaryTrie, BinaryTrieIteratorPathTest2) {
 
 TEST(BinaryTrie, BinaryTrieIteratorPathTest3) {
 
-    for(size_t i = 1; i < 1000; ++i) {
+    for (size_t i = 1; i < 1000; ++i) {
         GenerateAndTestTrie(i);
     }
 }

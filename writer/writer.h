@@ -6,7 +6,11 @@
 
 class Writer : public WriterInterface {
 public:
-    explicit Writer(const std::string& dir);
+    explicit Writer(std::string dir);
+    Writer(const Writer& o) = delete;
+    Writer& operator=(const Writer& o) = delete;
+    Writer(Writer&& o) = default;
+    Writer& operator=(Writer&& o) = default;
 
     void OpenFile(const std::string& file_name) override;
     void CloseFile() override;

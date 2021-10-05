@@ -3,7 +3,7 @@
 
 class WriterInterface {
 public:
-    virtual ~WriterInterface() {}
+    virtual ~WriterInterface() = default;
 
     virtual void OpenFile(const std::string& file_name) = 0;
     virtual void CloseFile() = 0;

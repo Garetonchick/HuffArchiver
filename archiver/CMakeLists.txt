@@ -7,7 +7,9 @@ add_library(ARCHIVER archiver.cpp)
 add_library(READER ../reader/reader.cpp)
 add_library(WRITER ../writer/writer.cpp)
 
-file(COPY ${CMAKE_SOURCE_DIR}/tests/mock DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+
+file(COPY tests/mock DESTINATION ${CMAKE_BINARY_DIR})
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/mock/decompressed)
 
 # Setup testing
 link_directories(/usr/local/lib)

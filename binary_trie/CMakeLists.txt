@@ -6,8 +6,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 add_library(BINARY_TRIE binary_trie.h)
 set_target_properties(BINARY_TRIE PROPERTIES LINKER_LANGUAGE CXX)
 
-file(COPY ${CMAKE_SOURCE_DIR}/tests/mock DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-
 # Setup testing
 link_directories(/usr/local/lib)
 

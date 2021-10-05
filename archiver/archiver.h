@@ -1,11 +1,11 @@
 #pragma once
-#include "../reader/reader_interface.h"
-#include "../writer/writer_interface.h"
-#include "../binary_trie/binary_trie.h"
-
 #include <vector>
 #include <array>
 #include <memory>
+
+#include "../reader/reader_interface.h"
+#include "../writer/writer_interface.h"
+#include "../binary_trie/binary_trie.h"
 
 class Archiver {
 public:
@@ -39,7 +39,6 @@ private:
     HuffmanCodesArray BuildHuffmanCodes(const FrequenciesArray& frequencies);
     std::vector<SymbolWithCode> ToCanonical(HuffmanCodesArray& huffman_codes);
     void WriteHuffmanCode(std::unique_ptr<WriterInterface>& writer, HuffmanCode code);
-
     bool DecompressFile(std::unique_ptr<ReaderInterface>& reader, std::unique_ptr<WriterInterface>& writer,
                         const BinaryTrie<short>& trie);
     BinaryTrie<short> RestoreBinaryTrie(std::unique_ptr<ReaderInterface>& reader);

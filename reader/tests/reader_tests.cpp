@@ -6,7 +6,7 @@
 void TestByteReading(const std::string& file_path, const std::vector<unsigned char>& expected_data) {
     Reader reader(file_path);
 
-    for(size_t i = 0; i < 4; ++i) {
+    for (size_t i = 0; i < 4; ++i) {
         for (auto byte : expected_data) {
             ASSERT_TRUE(reader.HasNextByte());
             auto read_byte = reader.ReadNextByte();
@@ -21,9 +21,9 @@ void TestByteReading(const std::string& file_path, const std::vector<unsigned ch
 void TestBitReading(const std::string& file_path, const std::vector<unsigned char>& expected_data) {
     Reader reader(file_path);
 
-    for(size_t i = 0; i < 4; ++i) {
+    for (size_t i = 0; i < 4; ++i) {
         for (auto byte : expected_data) {
-            for(size_t j = 0; j < 8; ++j) {
+            for (size_t j = 0; j < 8; ++j) {
                 ASSERT_TRUE(reader.HasNextBit());
                 bool read_bit = reader.ReadNextBit();
                 ASSERT_EQ(read_bit, (1 & (byte >> (7 - j))));

@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 add_library(WRITER writer.cpp)
 add_library(READER ../reader/reader.cpp)
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mock)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/mock)
 
 # Setup testing
 link_directories(/usr/local/lib)

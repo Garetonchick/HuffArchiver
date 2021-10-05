@@ -1,13 +1,13 @@
 #include "writer.h"
 
-Writer::Writer(const std::string& dir) : dir_(dir) {
+Writer::Writer(std::string dir) : dir_(std::move(dir)) {
 }
 
 void Writer::OpenFile(const std::string& file_name) {
     file_.open(dir_ + file_name);
 
     if(!file_) {
-        throw std::runtime_error("WRITER::OPEN_FILE: File \"" + dir_ + file_name + "\" can't be opened");
+        throw std::runtime_error("WRITER::OPEN_FILE: Can't open file: " + dir_ + file_name);
     }
 }
 

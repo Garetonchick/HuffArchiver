@@ -3,12 +3,10 @@ project(archiver)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 
-add_executable(archiver main.cpp)
+add_subdirectory(archiver/)
 
-add_library(ARCHIVER "archiver/archiver.cpp")
-add_library(READER reader/reader.cpp)
-add_library(WRITER writer/writer.cpp)
+add_executable(MAIN main.cpp)
 
-target_link_libraries(archiver ARCHIVER)
-target_link_libraries(archiver READER)
-target_link_libraries(archiver WRITER)
+target_link_libraries(MAIN ARCHIVER)
+target_link_libraries(MAIN READER)
+target_link_libraries(MAIN WRITER)

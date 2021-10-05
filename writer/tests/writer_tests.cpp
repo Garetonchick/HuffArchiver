@@ -1,8 +1,9 @@
 #include "../writer.h"
-#include "../../reader/reader.h"
 #include <gtest/gtest.h>
 
 #include <vector>
+
+#include "../../reader/reader.h"
 
 void ByteWritingTest(const std::vector<unsigned char>& data) {
     const std::string test_dir = "mock/";
@@ -34,7 +35,7 @@ void BitWritingTest(const std::vector<unsigned char>& data) {
     writer.OpenFile(test_name);
 
     for (auto byte : data) {
-        for(size_t i = 0; i < 8; ++i) {
+        for (size_t i = 0; i < 8; ++i) {
             writer.WriteBit((byte >> (7 - i)) & 1);
         }
     }
