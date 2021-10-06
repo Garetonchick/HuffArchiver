@@ -4,7 +4,7 @@
 #include <tuple>
 #include <utility>
 
-#include "../priority_queue/priority_queue.h"
+#include "priority_queue/priority_queue.h"
 
 void Archiver::Compress(std::vector<std::unique_ptr<ReaderInterface>>&& readers,
                         std::unique_ptr<WriterInterface> writer, const std::string& output_file_name) {
@@ -19,7 +19,7 @@ void Archiver::Compress(std::vector<std::unique_ptr<ReaderInterface>>&& readers,
 
 void Archiver::Decompress(std::unique_ptr<ReaderInterface> reader, std::unique_ptr<WriterInterface> writer) {
     while (true) {
-        BinaryTrie<short> trie = RestoreBinaryTrie(reader);
+        BinaryTrie<int16_t> trie = RestoreBinaryTrie(reader);
 
         if (!Archiver::DecompressFile(reader, writer, trie)) {
             break;
@@ -28,20 +28,20 @@ void Archiver::Decompress(std::unique_ptr<ReaderInterface> reader, std::unique_p
 }
 
 void Archiver::AddCompressedFile(std::unique_ptr<ReaderInterface>& reader, std::unique_ptr<WriterInterface>& writer,
-                                 bool is_archive_end) {
+                                 bool is_last) {
     FrequenciesArray frequencies = CountFrequencies(reader);
     HuffmanCodesArray huffman_codes = BuildHuffmanCodes(frequencies);
 
     auto sorted_symbols = ToCanonical(huffman_codes);
 
-    WriteHuffmanCode(writer, {.code = short(sorted_symbols.size()), .length = kMaxHuffmanCodeBits});
+    WriteHuffmanCode(writer, {.code = int16_t(sorted_symbols.size()), .length = kMaxHuffmanCodeBits});
 
     for (SymbolWithCode symbol : sorted_symbols) {
         WriteHuffmanCode(writer, {.code = symbol.symbol, .length = kMaxHuffmanCodeBits});
     }
 
     char last_length = 1;
-    short length_count = 0;
+    int16_t length_count = 0;
 
     for (SymbolWithCode symbol : sorted_symbols) {
         if (last_length != symbol.huffman.length) {
@@ -75,7 +75,7 @@ void Archiver::AddCompressedFile(std::unique_ptr<ReaderInterface>& reader, std::
         WriteHuffmanCode(writer, huffman_codes[reader->ReadNextByte()]);
     }
 
-    if (is_archive_end) {
+    if (is_last) {
         WriteHuffmanCode(writer, huffman_codes[size_t(SpecialCodes::kArchiveEnd)]);
     } else {
         WriteHuffmanCode(writer, huffman_codes[size_t(SpecialCodes::kOneMoreFile)]);
@@ -110,7 +110,7 @@ Archiver::HuffmanCodesArray Archiver::BuildHuffmanCodes(const FrequenciesArray& 
         size_t trie_index;
     };
 
-    std::vector<BinaryTrie<short>> tries;
+    std::vector<BinaryTrie<int16_t>> tries;
     PriorityQueue<QueueNode> queue;
 
     for (size_t i = 0; i < kMaxAlphabetSize; ++i) {
@@ -131,7 +131,7 @@ Archiver::HuffmanCodesArray Archiver::BuildHuffmanCodes(const FrequenciesArray& 
     }
 
     size_t final_idx = queue.Top().trie_index;
-    BinaryTrie<short> trie(std::move(tries[final_idx]));
+    BinaryTrie<int16_t> trie(std::move(tries[final_idx]));
 
     std::array<HuffmanCode, kMaxAlphabetSize> huffman_codes;
 
@@ -145,14 +145,14 @@ Archiver::HuffmanCodesArray Archiver::BuildHuffmanCodes(const FrequenciesArray& 
 }
 
 std::vector<Archiver::SymbolWithCode> Archiver::ToCanonical(HuffmanCodesArray& huffman_codes) {
-    std::vector<short> codes_order;
+    std::vector<int16_t> codes_order;
 
     for (size_t i = 0; i < kMaxAlphabetSize; ++i)
         if (huffman_codes[i].length != 0) {
             codes_order.push_back(i);
         }
 
-    std::sort(codes_order.begin(), codes_order.end(), [&huffman_codes](short a, short b) {
+    std::sort(codes_order.begin(), codes_order.end(), [&huffman_codes](int16_t a, int16_t b) {
         return std::tie(huffman_codes[a].length, a) < std::tie(huffman_codes[b].length, b);
     });
 
@@ -173,7 +173,7 @@ std::vector<Archiver::SymbolWithCode> Archiver::ToCanonical(HuffmanCodesArray& h
 
     std::vector<SymbolWithCode> symbols;
 
-    for (short i : codes_order) {
+    for (int16_t i : codes_order) {
         symbols.push_back({.symbol = i, .huffman = huffman_codes[i]});
     }
 
@@ -187,13 +187,13 @@ void Archiver::WriteHuffmanCode(std::unique_ptr<WriterInterface>& writer, Huffma
 }
 
 bool Archiver::DecompressFile(std::unique_ptr<ReaderInterface>& reader, std::unique_ptr<WriterInterface>& writer,
-                              const BinaryTrie<short>& trie) {
+                              const BinaryTrie<int16_t>& trie) {
     std::string file_name;
 
     while (true) {
-        short symbol = ReadCodeWithTrie(reader, trie);
+        int16_t symbol = ReadCodeWithTrie(reader, trie);
 
-        if (symbol == short(SpecialCodes::kFileNameEnd)) {
+        if (symbol == int16_t(SpecialCodes::kFileNameEnd)) {
             break;
         }
 
@@ -205,10 +205,10 @@ bool Archiver::DecompressFile(std::unique_ptr<ReaderInterface>& reader, std::uni
     bool has_one_more_file = false;
 
     while (true) {
-        short symbol = ReadCodeWithTrie(reader, trie);
+        int16_t symbol = ReadCodeWithTrie(reader, trie);
 
-        if (symbol == short(SpecialCodes::kOneMoreFile) || symbol == short(SpecialCodes::kArchiveEnd)) {
-            has_one_more_file = (symbol == short(SpecialCodes::kOneMoreFile));
+        if (symbol == int16_t(SpecialCodes::kOneMoreFile) || symbol == int16_t(SpecialCodes::kArchiveEnd)) {
+            has_one_more_file = (symbol == int16_t(SpecialCodes::kOneMoreFile));
             break;
         }
 
@@ -220,21 +220,21 @@ bool Archiver::DecompressFile(std::unique_ptr<ReaderInterface>& reader, std::uni
     return has_one_more_file;
 }
 
-BinaryTrie<short> Archiver::RestoreBinaryTrie(std::unique_ptr<ReaderInterface>& reader) {
-    short symbols_count = ReadMaxHuffmanCodeBits(reader);
-    std::vector<short> alphabet(symbols_count);
+BinaryTrie<int16_t> Archiver::RestoreBinaryTrie(std::unique_ptr<ReaderInterface>& reader) {
+    int16_t symbols_count = ReadMaxHuffmanCodeBits(reader);
+    std::vector<int16_t> alphabet(symbols_count);
 
-    for (short& symbol : alphabet) {
+    for (int16_t& symbol : alphabet) {
         symbol = ReadMaxHuffmanCodeBits(reader);
     }
 
-    BinaryTrie<short> trie;
+    BinaryTrie<int16_t> trie;
 
     {
         HuffmanCode huffman{.length = 1};
 
-        for (short symbols_processed = 0; symbols_processed < symbols_count; ++huffman.length) {
-            short length_count = ReadMaxHuffmanCodeBits(reader);
+        for (int16_t symbols_processed = 0; symbols_processed < symbols_count; ++huffman.length) {
+            int16_t length_count = ReadMaxHuffmanCodeBits(reader);
 
             while (length_count--) {
                 trie.Insert(alphabet[symbols_processed], ToBinaryPath(huffman));
@@ -249,8 +249,8 @@ BinaryTrie<short> Archiver::RestoreBinaryTrie(std::unique_ptr<ReaderInterface>& 
     return trie;
 }
 
-short Archiver::ReadMaxHuffmanCodeBits(std::unique_ptr<ReaderInterface>& reader) {
-    short code = 0;
+int16_t Archiver::ReadMaxHuffmanCodeBits(std::unique_ptr<ReaderInterface>& reader) {
+    int16_t code = 0;
 
     for (size_t i = 0; i < kMaxHuffmanCodeBits; ++i) {
         if (!reader->HasNextBit()) {
@@ -265,7 +265,7 @@ short Archiver::ReadMaxHuffmanCodeBits(std::unique_ptr<ReaderInterface>& reader)
     return code;
 }
 
-short Archiver::ReadCodeWithTrie(std::unique_ptr<ReaderInterface>& reader, const BinaryTrie<short>& trie) {
+int16_t Archiver::ReadCodeWithTrie(std::unique_ptr<ReaderInterface>& reader, const BinaryTrie<int16_t>& trie) {
     auto traverser = trie.GetRootTraverser();
     bool bad_trie = false;
 
@@ -299,7 +299,7 @@ short Archiver::ReadCodeWithTrie(std::unique_ptr<ReaderInterface>& reader, const
     return traverser.GetValue();
 }
 
-Archiver::HuffmanCode Archiver::ToHuffmanCode(const BinaryTrie<short>::BinaryPath& binary_path) {
+Archiver::HuffmanCode Archiver::ToHuffmanCode(const BinaryTrie<int16_t>::BinaryPath& binary_path) {
     HuffmanCode huffman{.length = char(binary_path.length)};
 
     for (char i = 0; i < huffman.length; ++i) {
@@ -311,8 +311,8 @@ Archiver::HuffmanCode Archiver::ToHuffmanCode(const BinaryTrie<short>::BinaryPat
     return huffman;
 }
 
-BinaryTrie<short>::BinaryPath Archiver::ToBinaryPath(const HuffmanCode& huffman_code) {
-    BinaryTrie<short>::BinaryPath path{.length = size_t(huffman_code.length)};
+BinaryTrie<int16_t>::BinaryPath Archiver::ToBinaryPath(const HuffmanCode& huffman_code) {
+    BinaryTrie<int16_t>::BinaryPath path{.length = size_t(huffman_code.length)};
 
     for (size_t i = 0; i < path.length; ++i) {
         if ((huffman_code.code >> i) & 1) {

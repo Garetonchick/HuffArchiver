@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <stdexcept>
+#include <queue>
 
 template <class T>
 class BinaryTrie {
@@ -64,7 +65,6 @@ private:
         Node(const Node& o) = delete;
         Node& operator=(const Node& o) = delete;
         Node() = default;
-        ~Node();
 
         void SetLeftChild(Node* node);
         void SetRightChild(Node* node);
@@ -93,8 +93,8 @@ public:
     BinaryTrie() = default;
     BinaryTrie(const BinaryTrie& o) = delete;
     BinaryTrie& operator=(const BinaryTrie& o) = delete;
-    BinaryTrie(BinaryTrie&& o) = default;
-    BinaryTrie& operator=(BinaryTrie&& o) = default;
+    BinaryTrie(BinaryTrie&& o);
+    BinaryTrie& operator=(BinaryTrie&& o);
     ~BinaryTrie();
 
     void Merge(BinaryTrie&& o);
@@ -110,6 +110,24 @@ private:
     Node* begin_node_ = nullptr;
     BinaryPath begin_path_;
 };
+
+template <class T>
+BinaryTrie<T>::BinaryTrie(BinaryTrie&& o) {
+    root_ = o.root_;
+    begin_node_ = o.begin_node_;
+    begin_path_ = o.begin_path_;
+    o.root_ = nullptr;
+}
+
+template <class T>
+BinaryTrie<T>& BinaryTrie<T>::operator=(BinaryTrie&& o) {
+    root_ = o.root_;
+    begin_node_ = o.begin_node_;
+    begin_path_ = o.begin_path_;
+    o.root_ = nullptr;
+
+    return *this;
+}
 
 template <class T>
 const typename BinaryTrie<T>::BinaryPath& BinaryTrie<T>::Traverser::operator*() const {
@@ -159,7 +177,26 @@ BinaryTrie<T>::BinaryTrie(const T& root_value) {
 
 template <class T>
 BinaryTrie<T>::~BinaryTrie() {
-    delete root_;
+    std::queue<Node*> to_delete;
+
+    to_delete.push(root_);
+
+    while (!to_delete.empty()) {
+        Node* node = to_delete.front();
+        to_delete.pop();
+
+        if (node != nullptr) {
+            if (node->GetLeftChild() != nullptr) {
+                to_delete.push(node->GetLeftChild());
+            }
+
+            if (node->GetRightChild() != nullptr) {
+                to_delete.push(node->GetRightChild());
+            }
+        }
+
+        delete node;
+    }
 }
 
 template <class T>
@@ -313,15 +350,6 @@ bool BinaryTrie<T>::Iterator::operator==(const BinaryTrie::Iterator& o) const {
 template <class T>
 BinaryTrie<T>::Node::Node(const T& value) {
     this->value_ = new T(value);
-}
-
-template <class T>
-BinaryTrie<T>::Node::~Node() {
-    delete value_;
-
-    for (auto& child : children_) {
-        delete child;
-    }
 }
 
 template <class T>

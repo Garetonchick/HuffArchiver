@@ -1,40 +1,40 @@
-#include "reader.h"
+#include "file_reader.h"
 
 #include <algorithm>
 #include <stdexcept>
 
-Reader::Reader(const std::string& file_path) : file_(file_path, std::ios::binary | std::ios::ate) {
+FileReader::FileReader(const std::string& file_path) : file_(file_path, std::ios::binary | std::ios::ate) {
     if (!file_) {
         throw std::runtime_error("READER: Can't open file: " + file_path);
     }
 
-    size_t name_start_pos =
-        std::find_if(file_path.rbegin(), file_path.rend(), [](char c) { return c == '/' || c == '\\'; }) -
-        file_path.rbegin();
+    size_t name_start_pos = file_path.find_last_of("/\\");
 
-    name_start_pos = file_path.size() - name_start_pos;
-
-    if (name_start_pos < file_path.size()) {
-        file_name_ = file_path.substr(name_start_pos, file_path.size() - name_start_pos);
+    if(name_start_pos == std::string::npos) {
+        name_start_pos = 0;
+    } else {
+        ++name_start_pos;
     }
+
+    filename_ = file_path.substr(name_start_pos);
 
     file_size_ = file_.tellg();
     file_.seekg(0);
 }
 
-bool Reader::HasNextByte() const {
+bool FileReader::HasNextByte() const {
     return bytes_read_ < file_size_;
 }
 
-bool Reader::HasNextBit() const {
+bool FileReader::HasNextBit() const {
     return bytes_read_ < file_size_;
 }
 
-const std::string& Reader::GetFileName() const {
-    return file_name_;
+const std::string& FileReader::GetFileName() const {
+    return filename_;
 }
 
-unsigned char Reader::ReadNextByte() {
+unsigned char FileReader::ReadNextByte() {
     char buffer;
 
     file_.read(&buffer, 1);
@@ -49,7 +49,7 @@ unsigned char Reader::ReadNextByte() {
     return buffer;
 }
 
-bool Reader::ReadNextBit() {
+bool FileReader::ReadNextBit() {
     bool bit = false;
 
     if (bit_pos_ == 0) {
@@ -71,7 +71,7 @@ bool Reader::ReadNextBit() {
     return bit;
 }
 
-void Reader::Reset() {
+void FileReader::Reset() {
     file_.seekg(0);
     bytes_read_ = 0;
     buffer_byte_ = 0;

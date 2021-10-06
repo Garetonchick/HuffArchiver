@@ -4,13 +4,13 @@
 #include <fstream>
 #include <optional>
 
-class Reader : public ReaderInterface {
+class FileReader : public ReaderInterface {
 public:
-    explicit Reader(const std::string& file_path);
-    Reader(const Reader& o) = delete;
-    Reader& operator=(const Reader& o) = delete;
-    Reader(Reader&& o) = default;
-    Reader& operator=(Reader&& o) = default;
+    explicit FileReader(const std::string& file_path);
+    FileReader(const FileReader& o) = delete;
+    FileReader& operator=(const FileReader& o) = delete;
+    FileReader(FileReader&& o) = default;
+    FileReader& operator=(FileReader&& o) = default;
 
     bool HasNextByte() const override;
     bool HasNextBit() const override;
@@ -22,7 +22,7 @@ public:
 
 private:
     std::ifstream file_;
-    std::string file_name_;
+    std::string filename_;
     size_t file_size_ = 0;
     size_t bytes_read_ = 0;
     size_t bit_pos_ = 0;

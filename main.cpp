@@ -1,17 +1,30 @@
-#include "archiver/archiver.h"
-
 #include <iostream>
+#include <queue>
 
-#include "reader/reader.h"
-#include "writer/writer.h"
+#include "archiver/archiver.h"
+#include "reader/file_reader.h"
+#include "writer/file_writer.h"
 
-enum class CommandType { kCompress, kDecompress, kHelp };
+enum class CommandType { kCompress, kDecompress, kHelp, kUnknownType };
 
 struct CommandProperties {
-    CommandType command_type = CommandType::kHelp;
+    CommandType command_type = CommandType::kUnknownType;
     std::string archive_name;
     std::vector<std::string> files_to_compress;
+    std::string output_directory;
 };
+
+void ProcessOutputOption(CommandProperties& properties, std::queue<std::string>& tokens) {
+    tokens.pop();
+
+    if (tokens.empty()) {
+        std::cout << "Option -o was used without output_dir specified" << std::endl;
+        exit(0);
+    }
+
+    properties.output_directory = tokens.front();
+    tokens.pop();
+}
 
 CommandProperties ParseArguments(int argc, char* argv[]) {
     if (argc < 2) {
@@ -19,41 +32,73 @@ CommandProperties ParseArguments(int argc, char* argv[]) {
         exit(0);
     }
 
+    std::queue<std::string> tokens;
+
+    for (int i = 1; i < argc; ++i) {
+        tokens.push(argv[i]);
+    }
+
     CommandProperties properties;
 
-    if (std::string(argv[1]) == "-c") {
-        if (argc < 4) {
-            if (argc == 2) {
+    while (!tokens.empty()) {
+        if (tokens.front() == "-c") {
+            properties.command_type = CommandType::kCompress;
+            tokens.pop();
+
+            if (tokens.empty()) {
                 std::cout << "There's no archive name" << std::endl;
-            } else if (argc == 3) {
-                std::cout << "There's no files to compress" << std::endl;
+                exit(0);
             }
 
-            exit(0);
-        }
+            properties.archive_name = tokens.front();
+            tokens.pop();
 
-        properties.command_type = CommandType::kCompress;
-        properties.archive_name = argv[2];
+            if (!tokens.empty() && tokens.front() == "-o") {
+                ProcessOutputOption(properties, tokens);
+            }
 
-        for (int i = 3; i < argc; ++i) {
-            properties.files_to_compress.emplace_back(argv[i]);
-        }
-    } else if (std::string(argv[1]) == "-d") {
-        if (argc < 3) {
-            std::cout << "No archive name" << std::endl;
-            exit(0);
-        }
+            if (tokens.empty()) {
+                std::cout << "There's no files to compress" << std::endl;
+                exit(0);
+            }
 
-        properties.command_type = CommandType::kDecompress;
-        properties.archive_name = argv[2];
-    } else if (std::string(argv[1]) == "-h") {
-        properties.command_type = CommandType::kHelp;
-    } else {
-        std::cout << "Unknown option" << std::endl;
-        exit(0);
+            while (!tokens.empty()) {
+                properties.files_to_compress.emplace_back(tokens.front());
+                tokens.pop();
+            }
+        } else if (tokens.front() == "-d") {
+            properties.command_type = CommandType::kDecompress;
+            tokens.pop();
+
+            if (tokens.empty()) {
+                std::cout << "No archive name" << std::endl;
+                exit(0);
+            }
+
+            properties.archive_name = tokens.front();
+            tokens.pop();
+
+            if (!tokens.empty() && tokens.front() == "-o") {
+                ProcessOutputOption(properties, tokens);
+            }
+        } else if (tokens.front() == "-h") {
+            properties.command_type = CommandType::kHelp;
+            tokens.pop();
+        }
     }
 
     return properties;
+}
+
+void PrintHelp() {
+    std::cout << "Usage:" << std::endl << std::endl;
+    std::cout << "archiver -c archive_name file1 [file2 ...] : "
+              << "Compress files file1 [file2 ...] and save them in archive archive_name" << std::endl;
+    std::cout << "archiver -d archive_name : "
+              << "Decompress archive archive_name and save result in current directory" << std::endl;
+    std::cout << "archiver -h"
+              << " : "
+              << "Print help message" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -63,13 +108,13 @@ int main(int argc, char* argv[]) {
     if (properties.command_type == CommandType::kCompress) {
         std::vector<std::unique_ptr<ReaderInterface>> readers;
 
-
         try {
-        for (const std::string& file : properties.files_to_compress) {
-            readers.emplace_back(std::make_unique<Reader>(file));
-        }
+            for (const std::string& file : properties.files_to_compress) {
+                readers.emplace_back(std::make_unique<FileReader>(file));
+            }
 
-            archiver.Compress(std::move(readers), std::make_unique<Writer>(""), properties.archive_name);
+            archiver.Compress(std::move(readers), std::make_unique<FileWriter>(properties.output_directory),
+                              properties.archive_name);
         }
 
         catch (const std::exception& e) {
@@ -79,7 +124,8 @@ int main(int argc, char* argv[]) {
 
     } else if (properties.command_type == CommandType::kDecompress) {
         try {
-            archiver.Decompress(std::make_unique<Reader>(properties.archive_name), std::make_unique<Writer>(""));
+            archiver.Decompress(std::make_unique<FileReader>(properties.archive_name),
+                                std::make_unique<FileWriter>(properties.output_directory));
         }
 
         catch (const std::exception& e) {
@@ -87,14 +133,9 @@ int main(int argc, char* argv[]) {
             return 0;
         }
     } else if (properties.command_type == CommandType::kHelp) {
-        std::cout << "Usage:" << std::endl << std::endl;
-        std::cout << "archiver -c archive_name file1 [file2 ...] : "
-                  << "Compress files file1 [file2 ...] and save them in archive archive_name" << std::endl;
-        std::cout << "archiver -d archive_name : "
-                  << "Decompress archive archive_name and save result in current directory" << std::endl;
-        std::cout << "archiver -h"
-                  << " : "
-                  << "Print help message" << std::endl;
+        PrintHelp();
+    } else if (properties.command_type == CommandType::kUnknownType) {
+        std::cout << "Unknown option" << std::endl;
     }
 
     return 0;

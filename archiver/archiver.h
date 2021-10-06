@@ -3,9 +3,9 @@
 #include <array>
 #include <memory>
 
-#include "../reader/reader_interface.h"
-#include "../writer/writer_interface.h"
-#include "../binary_trie/binary_trie.h"
+#include "reader/reader_interface.h"
+#include "writer/writer_interface.h"
+#include "binary_trie/binary_trie.h"
 
 class Archiver {
 public:
@@ -20,12 +20,12 @@ private:
     enum class SpecialCodes { kFileNameEnd = 256, kOneMoreFile = 257, kArchiveEnd = 258 };
 
     struct HuffmanCode {
-        short code = 0;
+        int16_t code = 0;
         char length = 0;
     };
 
     struct SymbolWithCode {
-        short symbol = 0;
+        int16_t symbol = 0;
         HuffmanCode huffman;
     };
 
@@ -34,16 +34,16 @@ private:
 
 private:
     void AddCompressedFile(std::unique_ptr<ReaderInterface>& reader, std::unique_ptr<WriterInterface>& writer,
-                           bool is_archive_end);
+                           bool is_last);
     FrequenciesArray CountFrequencies(std::unique_ptr<ReaderInterface>& reader);
     HuffmanCodesArray BuildHuffmanCodes(const FrequenciesArray& frequencies);
     std::vector<SymbolWithCode> ToCanonical(HuffmanCodesArray& huffman_codes);
     void WriteHuffmanCode(std::unique_ptr<WriterInterface>& writer, HuffmanCode code);
     bool DecompressFile(std::unique_ptr<ReaderInterface>& reader, std::unique_ptr<WriterInterface>& writer,
-                        const BinaryTrie<short>& trie);
-    BinaryTrie<short> RestoreBinaryTrie(std::unique_ptr<ReaderInterface>& reader);
-    short ReadMaxHuffmanCodeBits(std::unique_ptr<ReaderInterface>& reader);
-    short ReadCodeWithTrie(std::unique_ptr<ReaderInterface>& reader, const BinaryTrie<short>& trie);
-    HuffmanCode ToHuffmanCode(const BinaryTrie<short>::BinaryPath& binary_path);
-    BinaryTrie<short>::BinaryPath ToBinaryPath(const HuffmanCode& huffman_code);
+                        const BinaryTrie<int16_t>& trie);
+    BinaryTrie<int16_t> RestoreBinaryTrie(std::unique_ptr<ReaderInterface>& reader);
+    int16_t ReadMaxHuffmanCodeBits(std::unique_ptr<ReaderInterface>& reader);
+    int16_t ReadCodeWithTrie(std::unique_ptr<ReaderInterface>& reader, const BinaryTrie<int16_t>& trie);
+    HuffmanCode ToHuffmanCode(const BinaryTrie<int16_t>::BinaryPath& binary_path);
+    BinaryTrie<int16_t>::BinaryPath ToBinaryPath(const HuffmanCode& huffman_code);
 };

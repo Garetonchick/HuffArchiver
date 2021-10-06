@@ -1,4 +1,4 @@
-#include "../binary_trie.h"
+#include "binary_trie/binary_trie.h"
 #include <gtest/gtest.h>
 
 #include <vector>

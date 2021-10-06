@@ -1,4 +1,4 @@
-#include "../priority_queue.h"
+#include "priority_queue/priority_queue.h"
 #include <gtest/gtest.h>
 
 #include <queue>

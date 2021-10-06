@@ -4,9 +4,15 @@
 [алгоритм Хаффмана](https://en.wikipedia.org/wiki/Huffman_coding). 
 
 # Команды
-* `archiver -c archive_name file1 [file2 ...]` - заархивировать файлы `fil1, file2, ...` и сохранить результат в файл `archive_name`.
-* `archiver -d archive_name` - разархивировать файлы из архива `archive_name` и положить в текущую директорию.
+* `archiver -c archive_name file1 [file2 ...]` - заархивировать файлы 
+`file1, file2, ...` и сохранить результат в файл `archive_name`.
+* `archiver -d archive_name` - разархивировать файлы из архива `archive_name`
+и положить в текущую директорию.
 * `archiver -h` - вывести справку по использованию программы.
+* `-o` - опция позволяет указать директорию для выходного файла. 
+Например `archiver -c archive_name -o output_dir file1 [file2 ...]`
+заархивирует файлы `file1, file2, ...` и сохранит результат в 
+`output_dir/archive_name`.
 
 # Бенчмарки
 

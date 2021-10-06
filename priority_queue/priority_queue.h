@@ -18,7 +18,7 @@ private:
     struct Node {
         Node* left_child = nullptr;
         Node* right_child = nullptr;
-        size_t sub_tree_size = 0;
+        size_t subtree_size = 0;
         T value;
     };
 
@@ -56,7 +56,7 @@ void PriorityQueue<T, Compare>::Push(T value) {
     Node** current_node = &root_;
 
     while ((*current_node) != nullptr) {
-        ++(*current_node)->sub_tree_size;
+        ++(*current_node)->subtree_size;
 
         if (Compare()(value, (*current_node)->value)) {
             std::swap((*current_node)->value, value);
@@ -67,7 +67,7 @@ void PriorityQueue<T, Compare>::Push(T value) {
         } else if ((*current_node)->right_child == nullptr) {
             current_node = &(*current_node)->right_child;
         } else {
-            if ((*current_node)->left_child->sub_tree_size < (*current_node)->right_child->sub_tree_size) {
+            if ((*current_node)->left_child->subtree_size < (*current_node)->right_child->subtree_size) {
                 current_node = &(*current_node)->left_child;
             } else {
                 current_node = &(*current_node)->right_child;
@@ -90,7 +90,7 @@ void PriorityQueue<T, Compare>::Pop() {
 
     while ((*current_node)->left_child != nullptr || (*current_node)->right_child != nullptr) {
         previous_node = current_node;
-        --(*current_node)->sub_tree_size;
+        --(*current_node)->subtree_size;
 
         if ((*current_node)->left_child == nullptr) {
             std::swap((*current_node)->value, (*current_node)->right_child->value);

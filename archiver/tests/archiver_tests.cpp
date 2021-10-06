@@ -1,14 +1,14 @@
-#include "../archiver.h"
+#include "archiver/archiver.h"
 #include <gtest/gtest.h>
 
 #include <vector>
 
-#include "../../reader/reader.h"
-#include "../../writer/writer.h"
+#include "reader/file_reader.h"
+#include "writer/file_writer.h"
 
 bool AreFilesEqual(const std::string& file_path1, const std::string& file_path2) {
-    Reader reader1(file_path1);
-    Reader reader2(file_path2);
+    FileReader reader1(file_path1);
+    FileReader reader2(file_path2);
 
     while (reader1.HasNextByte()) {
         if (reader1.ReadNextByte() != reader2.ReadNextByte()) {
@@ -38,11 +38,11 @@ void TestFileCompression(const std::string& file_name) {
     const std::string archive_name = RemoveFileExtension(file_name) + ".arc";
 
     std::vector<std::unique_ptr<ReaderInterface>> readers;
-    readers.emplace_back(std::make_unique<Reader>("mock/" + file_name));
+    readers.emplace_back(std::make_unique<FileReader>("mock/" + file_name));
 
-    archiver.Compress(std::move(readers), std::make_unique<Writer>("mock/"), archive_name);
-    archiver.Decompress(std::make_unique<Reader>("mock/" + archive_name),
-                        std::make_unique<Writer>("mock/decompressed/"));
+    archiver.Compress(std::move(readers), std::make_unique<FileWriter>("mock/"), archive_name);
+    archiver.Decompress(std::make_unique<FileReader>("mock/" + archive_name),
+                        std::make_unique<FileWriter>("mock/decompressed/"));
 
     ASSERT_TRUE(AreFilesEqual("mock/" + file_name, "mock/decompressed/" + file_name));
 }
@@ -52,13 +52,13 @@ void TestFilesCompression(const std::vector<std::string>& file_names, const std:
     std::vector<std::unique_ptr<ReaderInterface>> readers;
 
     for (const auto& file_name : file_names) {
-        readers.emplace_back(std::make_unique<Reader>("mock/" + file_name));
+        readers.emplace_back(std::make_unique<FileReader>("mock/" + file_name));
     }
 
-    archiver.Compress(std::move(readers), std::make_unique<Writer>("mock/"), archive_name);
+    archiver.Compress(std::move(readers), std::make_unique<FileWriter>("mock/"), archive_name);
 
-    archiver.Decompress(std::make_unique<Reader>("mock/" + archive_name),
-                        std::make_unique<Writer>("mock/decompressed/"));
+    archiver.Decompress(std::make_unique<FileReader>("mock/" + archive_name),
+                        std::make_unique<FileWriter>("mock/decompressed/"));
 
     for (const auto& file_name : file_names) {
         ASSERT_TRUE(AreFilesEqual("mock/" + file_name, "mock/decompressed/" + file_name));

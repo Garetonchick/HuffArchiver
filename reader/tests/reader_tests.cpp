@@ -1,10 +1,10 @@
-#include "../reader.h"
+#include "reader/file_reader.h"
 #include <gtest/gtest.h>
 
 #include <vector>
 
 void TestByteReading(const std::string& file_path, const std::vector<unsigned char>& expected_data) {
-    Reader reader(file_path);
+    FileReader reader(file_path);
 
     for (size_t i = 0; i < 4; ++i) {
         for (auto byte : expected_data) {
@@ -19,7 +19,7 @@ void TestByteReading(const std::string& file_path, const std::vector<unsigned ch
 }
 
 void TestBitReading(const std::string& file_path, const std::vector<unsigned char>& expected_data) {
-    Reader reader(file_path);
+    FileReader reader(file_path);
 
     for (size_t i = 0; i < 4; ++i) {
         for (auto byte : expected_data) {
@@ -52,7 +52,7 @@ TEST(Reader, ReadBinaryFile2) {
 }
 
 TEST(Reader, NameGettingTest) {
-    Reader reader("mock/test_1.bin");
+    FileReader reader("mock/test_1.bin");
 
     ASSERT_EQ(reader.GetFileName(), "test_1.bin");
 }

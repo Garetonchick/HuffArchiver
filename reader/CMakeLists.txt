@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(archiver)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 
-add_library(READER reader.cpp)
+add_library(READER file_reader.cpp)
 
 file(COPY tests/mock DESTINATION ${CMAKE_BINARY_DIR}/)
 
