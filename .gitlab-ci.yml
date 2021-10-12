@@ -4,7 +4,7 @@ job:
   script:
     - apt-get update
     - apt-get upgrade
-    - apt-get install -y --install-suggests clang-11 cmake libgtest-dev
+    - apt-get install -y --install-suggests clang cmake libgtest-dev
     - cd /usr/src/gtest
     - cmake CMakeLists.txt && make
     - cp *.a /usr/lib
