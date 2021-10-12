@@ -8,6 +8,10 @@ job:
     - cmake CMakeLists.txt && make
     - cp *.a /usr/lib
     - cd -
-    - cmake CMakeLists.txt && make tests
+    - cd archiver && mkdir build && cd build && cmake .. && make tests && ../..
+    - cd binary_trie && mkdir build && cd build && cmake .. && make tests && ../..
+    - cd priority_queue && mkdir build && cd build && cmake .. && make tests && ../..
+    - cd reader && mkdir build && cd build && cmake .. && make tests && ../..
+    - cd writer && mkdir build && cd build && cmake .. && make tests && ../..
     
 
