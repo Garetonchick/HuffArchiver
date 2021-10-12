@@ -8,11 +8,16 @@ build-job:
   stage: build
   script:
     - apt-get update
-    - apt-get install -y cmake clang-9 libgtest-dev
+    - apt-get install -y cmake g++ libgtest-dev
     - cd /usr/src/gtest
     - cmake CMakeLists.txt && make
     - cp *.a /usr/lib
     - cd -
-    - cmake CMakeLists.txt && make tests
+    - cmake CMakeLists.txt
+
+run-tests-job:
+  stage: test
+  script:
+    - make tests
     
 
