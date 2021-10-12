@@ -2,8 +2,8 @@ image: ubuntu:18.04
 
 job:
   script:
-    - apt-get update
-    - apt-get install -y cmake g++ libgtest-dev
+    - apt update
+    - apt install -y clang-11 cmake libgtest-dev
     - cd /usr/src/gtest
     - cmake CMakeLists.txt && make
     - cp *.a /usr/lib
