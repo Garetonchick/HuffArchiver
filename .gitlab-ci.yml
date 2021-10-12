@@ -1,0 +1,18 @@
+image: ubuntu:18.04
+
+stages: 
+  - build
+  - test 
+
+build-job:
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y cmake clang-11 libgtest-dev
+    - cd /usr/src/gtest
+    - cmake CMakeLists.txt && make
+    - cp *.a /usr/lib
+    - cd -
+    - cmake CMakeLists.txt && make tests
+    
+
