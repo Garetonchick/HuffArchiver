@@ -1,11 +1,6 @@
 image: ubuntu:18.04
 
-stages: 
-  - build
-  - test 
-
-build-job:
-  stage: build
+job:
   script:
     - apt-get update
     - apt-get install -y cmake g++ libgtest-dev
@@ -13,11 +8,6 @@ build-job:
     - cmake CMakeLists.txt && make
     - cp *.a /usr/lib
     - cd -
-    - cmake CMakeLists.txt
-
-run-tests-job:
-  stage: test
-  script:
-    - make tests
+    - cmake CMakeLists.txt && make tests
     
 
