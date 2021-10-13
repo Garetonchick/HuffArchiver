@@ -44,6 +44,6 @@ Run following commands from source root directory:
 In the build directory you will find "MAIN" file, which
 is the archiver's executable.
 
-#License
+# License
 
 This project is licensed under the terms of the MIT license.
