@@ -64,7 +64,7 @@ void Archiver::AddCompressedFile(std::unique_ptr<ReaderInterface>& reader, std::
     }
 
     for (char c : reader->GetFileName()) {
-        WriteHuffmanCode(writer, huffman_codes[c]);
+        WriteHuffmanCode(writer, huffman_codes[*reinterpret_cast<unsigned char*>(&c)]);
     }
 
     WriteHuffmanCode(writer, huffman_codes[size_t(SpecialCodes::kFileNameEnd)]);
@@ -90,7 +90,7 @@ Archiver::FrequenciesArray Archiver::CountFrequencies(std::unique_ptr<ReaderInte
     frequencies[size_t(SpecialCodes::kArchiveEnd)] = 1;
 
     for (char c : reader->GetFileName()) {
-        ++frequencies[c];
+        ++frequencies[*reinterpret_cast<unsigned char*>(&c)];
     }
 
     while (reader->HasNextByte()) {
@@ -197,7 +197,8 @@ bool Archiver::DecompressFile(std::unique_ptr<ReaderInterface>& reader, std::uni
             break;
         }
 
-        file_name.push_back(char(symbol));
+        unsigned char char_symbol = symbol;
+        file_name.push_back(*reinterpret_cast<char*>(&char_symbol));
     }
 
     writer->OpenFile(file_name);
