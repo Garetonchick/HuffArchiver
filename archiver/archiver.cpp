@@ -103,11 +103,12 @@ Archiver::FrequenciesArray Archiver::CountFrequencies(std::unique_ptr<ReaderInte
 Archiver::HuffmanCodesArray Archiver::BuildHuffmanCodes(const FrequenciesArray& frequencies) {
     struct QueueNode {
         bool operator<(const QueueNode& o) const {
-            return priority < o.priority;
+            return std::tie(priority, val) < std::tie(o.priority, o.val);
         }
 
         size_t priority;
         size_t trie_index;
+        size_t val;
     };
 
     std::vector<BinaryTrie<int16_t>> tries;
@@ -115,19 +116,19 @@ Archiver::HuffmanCodesArray Archiver::BuildHuffmanCodes(const FrequenciesArray& 
 
     for (size_t i = 0; i < kMaxAlphabetSize; ++i) {
         if (frequencies[i]) {
-            queue.Push({.priority = frequencies[i], .trie_index = tries.size()});
+            queue.Push({.priority = frequencies[i], .trie_index = tries.size(), .val = i});
             tries.emplace_back(i);
         }
     }
 
     while (queue.GetSize() > 1) {
-        auto [prior1, idx1] = queue.Top();
+        auto [prior1, idx1, val1] = queue.Top();
         queue.Pop();
-        auto [prior2, idx2] = queue.Top();
+        auto [prior2, idx2, val2] = queue.Top();
         queue.Pop();
 
         tries[idx1].Merge(std::move(tries[idx2]));
-        queue.Push({.priority = prior1 + prior2, .trie_index = idx1});
+        queue.Push({.priority = prior1 + prior2, .trie_index = idx1, .val=std::min(val1, val2)});
     }
 
     size_t final_idx = queue.Top().trie_index;
@@ -260,6 +261,7 @@ int16_t Archiver::ReadMaxHuffmanCodeBits(std::unique_ptr<ReaderInterface>& reade
 
         if (reader->ReadNextBit()) {
             code |= (1 << (kMaxHuffmanCodeBits - 1 - i));
+            // code |= (1 << i);
         }
     }
 

@@ -38,7 +38,7 @@ std::string RemoveFileExtension(const std::string& file_name) {
 void TestFileCompression(const std::string& file_name) {
     Archiver archiver;
     auto archive_name = file_name + ".arc";
-    std::string dir = "/home/gareton/repos/HuffArchiver/archiver/tests/mock/";
+    std::string dir = std::string(CMAKE_BUILD_PATH) + "/mock/";
 
     std::vector<std::unique_ptr<ReaderInterface>> readers;
     readers.emplace_back(std::make_unique<FileReader>(dir + file_name));
@@ -53,24 +53,29 @@ void TestFileCompression(const std::string& file_name) {
 void TestFilesCompression(const std::vector<std::string>& file_names, const std::string& archive_name = "archive.arc") {
     Archiver archiver;
     std::vector<std::unique_ptr<ReaderInterface>> readers;
+    std::string dir = std::string(CMAKE_BUILD_PATH) + "/mock/";
 
     for (const auto& file_name : file_names) {
-        readers.emplace_back(std::make_unique<FileReader>("mock/" + file_name));
+        readers.emplace_back(std::make_unique<FileReader>(dir + file_name));
     }
 
-    archiver.Compress(std::move(readers), std::make_unique<FileWriter>("mock/"), archive_name);
+    archiver.Compress(std::move(readers), std::make_unique<FileWriter>(dir), archive_name);
 
-    archiver.Decompress(std::make_unique<FileReader>("mock/" + archive_name),
-                        std::make_unique<FileWriter>("mock/decompressed/"));
+    archiver.Decompress(std::make_unique<FileReader>(dir + archive_name),
+                        std::make_unique<FileWriter>(dir + "decompressed/"));
 
     for (const auto& file_name : file_names) {
-        ASSERT_TRUE(AreFilesEqual("mock/" + file_name, "mock/decompressed/" + file_name));
+        ASSERT_TRUE(AreFilesEqual(dir + file_name, dir + "decompressed/" + file_name));
     }
 }
 
 // TEST(Archiver, TheSimplestTest) {
 //     TestFileCompression("T");
 // }
+
+TEST(Archiver, FormatTest) {
+    TestFileCompression("kek");
+}
 
 // TEST(Archiver, ArchiverTest1) {
 //     TestFileCompression("test_1.bin");
@@ -88,15 +93,9 @@ void TestFilesCompression(const std::vector<std::string>& file_names, const std:
 //     TestFilesCompression({"T", "test_1.bin", "Zadachnik-Kostrikin.pdf"});
 // }
 
-TEST(Archiver, StrangeFilenameTest) {
-    // auto path = std::filesystem::u8path("/home/gareton/repos/HuffArchiver/archiver/tests/mock/  Очень при очень плохое  имя файла  ありがとう 😂");
-    // auto path = std::filesystem::u8path("mock/Очень при очень плохое  имя файла");
-    // std::cout << (std::filesystem::exists(path) ? "exists" : "not exists") << std::endl;
-    // std::ifstream in(path);
-    // std::cout << (in.good() ? "yey" : "oh no") << std::endl;
-
-    TestFileCompression("  Очень при очень плохое  имя файла  ありがとう 😂");
-}
+// TEST(Archiver, StrangeFilenameTest) {
+//     TestFileCompression("  Очень при очень плохое  имя файла  ありがとう 😂");
+// }
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
